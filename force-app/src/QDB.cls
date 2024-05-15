@@ -4,7 +4,7 @@ public with sharing class QDB {
     }
 
     public static List<SObject> query(QueryBuilder queryBuilder) {
-//        String objectType = queryBuilder.getFrom();
-        return [SELECT Id FROM Account];
+        String objectType = queryBuilder.getFrom();
+        return Database.query('SELECT Id FROM ' + objectType);
     }
 }
