@@ -1,6 +1,6 @@
 public with sharing class QDB {
     public static void doInsert(SObject recordToInsert) {
-        insert recordToInsert;
+        Database.insert(recordToInsert);
     }
 
     public static List<SObject> query(QueryBuilder queryBuilder) {

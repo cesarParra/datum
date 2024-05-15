@@ -19,6 +19,11 @@ private class QueryBuilderTest {
     }
 
     @IsTest
+    static void canSelectFromAnObject_inMemory() {
+
+    }
+
+    @IsTest
     static void canSelectFromAnyObject_systemDb() {
         Contact someContact = new Contact(LastName = 'Test Contact');
         QDB.doInsert(someContact);
@@ -32,7 +37,6 @@ private class QueryBuilderTest {
     }
 
     // TODO: NEXT -> In Memory DB impl
-    // TODO: Can query ANY object
     // TODO: Can query specific fields out of an object
     // TODO: Support bulk insert
 }
