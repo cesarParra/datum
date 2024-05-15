@@ -6,13 +6,13 @@ private class QueryBuilderTest {
     static void canSelectFromAnObject_systemDb() {
         // Given an account in the DB
         Account account = new Account(Name = 'Test Account');
-        QDB.doInsert(account);
+        QDB.getInstance().doInsert(account);
 
         // By default when you don't specify any fields, it is going to select the Id
         QueryBuilder builder = QueryBuilder.of('Account');
 
         // When I run the query
-        List<Account> accounts = QDB.query(builder);
+        List<Account> accounts = QDB.getInstance().query(builder);
 
         Assert.areEqual(1, accounts.size());
         Assert.areEqual(account.Id, accounts[0].Id);
@@ -26,11 +26,11 @@ private class QueryBuilderTest {
     @IsTest
     static void canSelectFromAnyObject_systemDb() {
         Contact someContact = new Contact(LastName = 'Test Contact');
-        QDB.doInsert(someContact);
+        QDB.getInstance().doInsert(someContact);
 
         QueryBuilder builder = QueryBuilder.of('Contact');
 
-        List<Contact> contacts = QDB.query(builder);
+        List<Contact> contacts = QDB.getInstance().query(builder);
 
         Assert.areEqual(1, contacts.size());
         Assert.areEqual(someContact.Id, contacts[0].Id);
