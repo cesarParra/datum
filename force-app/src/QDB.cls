@@ -1,6 +1,10 @@
 public abstract class QDB {
     private static QDB instance;
     public static QDB getInstance() {
+        if (instance != null) {
+            return instance;
+        }
+
         if (instance == null && Test.isRunningTest()) {
             instance = new InMemoryDB();
         } else {
@@ -22,11 +26,14 @@ public abstract class QDB {
     }
 
     private class InMemoryDB extends QDB {
+        final List<SObject> records = new List<SObject>();
         public override void doInsert(SObject recordToInsert) {
+            records.add(recordToInsert);
         }
 
         public override List<SObject> query(QueryBuilder queryBuilder) {
-            return null;
+            System.debug(records);
+            return records;
         }
     }
 
