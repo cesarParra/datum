@@ -1,6 +1,13 @@
 public abstract class QDB {
+    private static QDB instance;
     public static QDB getInstance() {
-        return new SystemDB();
+        if (instance == null && Test.isRunningTest()) {
+            instance = new InMemoryDB();
+        } else {
+            instance = new SystemDB();
+        }
+
+        return instance;
     }
 
     private class SystemDB extends QDB {
@@ -14,8 +21,22 @@ public abstract class QDB {
         }
     }
 
+    private class InMemoryDB extends QDB {
+        public override void doInsert(SObject recordToInsert) {
+        }
+
+        public override List<SObject> query(QueryBuilder queryBuilder) {
+            return null;
+        }
+    }
+
 
     public abstract void doInsert(SObject recordToInsert);
 
     public abstract List<SObject> query(QueryBuilder queryBuilder);
+
+    public static void useSystemDB() {
+        instance = new SystemDB();
+    }
 }
+

@@ -5,6 +5,7 @@ private class QueryBuilderTest {
     @IsTest
     static void canSelectFromAnObject_systemDb() {
         // Given an account in the DB
+        QDB.useSystemDB();
         Account account = new Account(Name = 'Test Account');
         QDB.getInstance().doInsert(account);
 
@@ -25,6 +26,7 @@ private class QueryBuilderTest {
 
     @IsTest
     static void canSelectFromAnyObject_systemDb() {
+        QDB.useSystemDB();
         Contact someContact = new Contact(LastName = 'Test Contact');
         QDB.getInstance().doInsert(someContact);
 
