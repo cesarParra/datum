@@ -3,7 +3,7 @@
   <component name="FacetManager">
     <facet type="IlluminatedCloud" name="Illuminated Cloud">
       <configuration>
-        <option name="connectionName" value="test-hryehwjjnii5@example.com" />
+        <option name="connectionName" value="datum" />
         <option name="connectionType" value="SFDX" />
       </configuration>
     </facet>
@@ -16,7 +16,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.sf" />
       <excludeFolder url="file://$MODULE_DIR$/.sfdx" />
     </content>
-    <orderEntry type="jdk" jdkName="IlluminatedCloud (datum/test-hryehwjjnii5@example.com)" jdkType="IlluminatedCloud" />
+    <orderEntry type="jdk" jdkName="IlluminatedCloud (datum/datum)" jdkType="IlluminatedCloud" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
