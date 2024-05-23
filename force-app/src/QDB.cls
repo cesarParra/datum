@@ -28,6 +28,7 @@ public abstract class QDB {
     private class InMemoryDB extends QDB {
         final List<SObject> records = new List<SObject>();
         public override void doInsert(SObject recordToInsert) {
+            recordToInsert.Id = IdGenerator.generate(recordToInsert.getSObjectType());
             records.add(recordToInsert);
         }
 
