@@ -19,6 +19,10 @@ public abstract class QDB {
             Database.insert(recordToInsert);
         }
 
+        public override void doInsert(List<SObject> recordsToInsert) {
+            Database.insert(recordsToInsert);
+        }
+
         public override List<SObject> query(QueryBuilder queryBuilder) {
             String objectType = queryBuilder.getFrom();
             return Database.query('SELECT Id FROM ' + objectType);
@@ -30,6 +34,12 @@ public abstract class QDB {
         public override void doInsert(SObject recordToInsert) {
             recordToInsert.Id = IdGenerator.generate(recordToInsert.getSObjectType());
             records.add(recordToInsert);
+        }
+
+        public override void doInsert(List<SObject> recordsToInsert) {
+            for (SObject record : recordsToInsert) {
+                doInsert(record);
+            }
         }
 
         public override List<SObject> query(QueryBuilder queryBuilder) {
@@ -49,6 +59,7 @@ public abstract class QDB {
 
 
     public abstract void doInsert(SObject recordToInsert);
+    public abstract void doInsert(List<SObject> recordsToInsert);
 
     public abstract List<SObject> query(QueryBuilder queryBuilder);
 

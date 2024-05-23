@@ -49,8 +49,13 @@ private class QueryBuilderTest {
     @IsTest
     static void canSelectFromAnyObject_inMemoryDb() {
         Contact someContact = new Contact(LastName = 'Test Contact');
-        QDB.getInstance().doInsert(someContact);
-        QDB.getInstance().doInsert(new Account(Name = 'Test Account'));
+        Account someAccount = new Account(Name = 'Test Account');
+        QDB.getInstance().doInsert(
+            new List<SObject> {
+                someContact,
+                someAccount
+            }
+        );
 
         QueryBuilder builder = QueryBuilder.of('Contact');
 
@@ -72,6 +77,7 @@ private class QueryBuilderTest {
     }
 
 
+    // RED, GREEN, REFACTOR
     // TODO: Support bulk insert
     // TODO: Can query specific fields out of an object
 }
