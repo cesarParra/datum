@@ -91,6 +91,20 @@ private class QueryBuilderTest {
         Assert.areEqual(account.Name, accounts[0].Name);
     }
 
+    @IsTest
+    static void canSelectSpecificFieldsFromAnObject_inMemoryDb() {
+        Account account = new Account(Name = 'Test Account');
+        QDB.getInstance().doInsert(account);
+
+        QueryBuilder builder = QueryBuilder.of('Account');
+
+        List<Account> accounts = QDB.getInstance().query(builder);
+
+        Assert.areEqual(1, accounts.size());
+        Assert.areEqual(account.Id, accounts[0].Id);
+        Assert.isNull(accounts[0].Name);
+    }
+
     // TODO: If fields are null then we are handling it
 
     // TODO: Can query specific fields out of an object

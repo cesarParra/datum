@@ -46,12 +46,17 @@ public abstract class QDB {
 
         public override List<SObject> query(QueryBuilder queryBuilder) {
             List<SObject> filteredRecords = new List<SObject>();
-            // filter based on SObjectType
-
             String fromObject = queryBuilder.getFrom();
             for (SObject currentRecord : records) {
-                if (currentRecord.getSObjectType().getDescribe().getName().equalsIgnoreCase(fromObject)) {
-                    filteredRecords.add(currentRecord);
+                SObjectType type = currentRecord.getSObjectType();
+                if (type.getDescribe().getName().equalsIgnoreCase(fromObject)) {
+                    SObject newRecord = type.newSObject(currentRecord.Id);
+
+                    for (String queriedField : queryBuilder.getFields()) {
+                        newRecord.put(queriedField, currentRecord.get(queriedField));
+                    }
+
+                    filteredRecords.add(newRecord);
                 }
             }
 
