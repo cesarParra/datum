@@ -76,8 +76,28 @@ private class QueryBuilderTest {
         Assert.isNotNull(contacts[0].Id);
     }
 
+    @IsTest
+    static void canSelectSpecificFieldsFromAnObject_systemDb() {
+        QDB.useSystemDB();
+        Account account = new Account(Name = 'Test Account');
+        QDB.getInstance().doInsert(account);
 
-    // RED, GREEN, REFACTOR
-    // TODO: Support bulk insert
+        QueryBuilder builder = QueryBuilder.of('Account').selectFields(new Set<String> { 'Name' });
+
+        List<Account> accounts = QDB.getInstance().query(builder);
+
+        Assert.areEqual(1, accounts.size());
+        Assert.areEqual(account.Id, accounts[0].Id);
+        Assert.areEqual(account.Name, accounts[0].Name);
+    }
+
+    // TODO: If fields are null then we are handling it
+
     // TODO: Can query specific fields out of an object
+
+    // TODO: Be able to specify an "of" that is an SobjectType and not a string
+    // TODO: When the "of" overload using a string gets used, there should be validation to ensure that a correct SObjecttype is used
+
+    // FOR WAY LATER
+    // Update, Upsert, Delete, Unledete, Merge
 }

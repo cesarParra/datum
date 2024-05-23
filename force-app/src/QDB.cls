@@ -25,7 +25,9 @@ public abstract class QDB {
 
         public override List<SObject> query(QueryBuilder queryBuilder) {
             String objectType = queryBuilder.getFrom();
-            return Database.query('SELECT Id FROM ' + objectType);
+            String fieldString = String.join(queryBuilder.getFields(), ',');
+
+            return Database.query('SELECT ' + fieldString + ' FROM ' + objectType);
         }
     }
 
@@ -43,7 +45,7 @@ public abstract class QDB {
         }
 
         public override List<SObject> query(QueryBuilder queryBuilder) {
-           List<SObject> filteredRecords = new List<SObject>();
+            List<SObject> filteredRecords = new List<SObject>();
             // filter based on SObjectType
 
             String fromObject = queryBuilder.getFrom();
