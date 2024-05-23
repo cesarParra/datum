@@ -12,7 +12,8 @@ public with sharing class QueryBuilder {
     }
 
     public QueryBuilder selectFields(Set<String> fields) {
-        this.fields.addAll(fields);
+        Set<String> fieldsToAdd = fields ?? new Set<String>();
+        this.fields.addAll(fieldsToAdd);
         return this;
     }
 

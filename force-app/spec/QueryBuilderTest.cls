@@ -92,6 +92,22 @@ private class QueryBuilderTest {
     }
 
     @IsTest
+    static void canSelectSpecificFieldsFromAnObject_whenANullSetOfFieldsIsPassed_noExceptionsAreThrown() {
+        QDB.useSystemDB();
+        Account account = new Account(Name = 'Test Account');
+        QDB.getInstance().doInsert(account);
+
+        QueryBuilder builder = QueryBuilder.of('Account').selectFields(null);
+
+        try {
+            QDB.getInstance().query(builder);
+            Assert.isTrue(true);
+        } catch (Exception e) {
+            Assert.fail('An exception was thrown');
+        }
+    }
+
+    @IsTest
     static void canSelectSpecificFieldsFromAnObject_inMemoryDb() {
         Account account = new Account(Name = 'Test Account');
         QDB.getInstance().doInsert(account);
