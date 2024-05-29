@@ -176,6 +176,24 @@ private class QueryBuilderTest {
         Assert.areEqual(1, accounts.size());
     }
 
+    @IsTest
+    static void canSelectUsingLimit_inMemoryDb() {
+        QDB.getInstance().doInsert(
+            new List<SObject>{
+                new Account(Name = 'Test Account 1'),
+                new Account(Name = 'Test Account 2')
+            }
+        );
+
+        QueryBuilder builder = QueryBuilder.of('Account')
+            .selectFields(new Set<String>{'Name'})
+            .withLimitAmount(1);
+
+        List<Account> accounts = QDB.getInstance().query(builder);
+
+        Assert.areEqual(1, accounts.size());
+    }
+
     // TODO: LIMIT
     // TODO: Can query specific fields out of an object
     // TODO: Can query parent fields

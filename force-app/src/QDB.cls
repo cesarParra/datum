@@ -50,6 +50,7 @@ public abstract class QDB {
         }
 
         public override List<SObject> query(QueryBuilder queryBuilder) {
+            Integer limitAmount = queryBuilder.getLimitAmount();
             List<SObject> filteredRecords = new List<SObject>();
             String fromObject = queryBuilder.getFrom();
             for (SObject currentRecord : records) {
@@ -61,7 +62,9 @@ public abstract class QDB {
                         builder.put(queriedField, currentRecord.get(queriedField));
                     }
 
-                    filteredRecords.add(builder.build());
+                    if (limitAmount == null || filteredRecords.size() < limitAmount) {
+                        filteredRecords.add(builder.build());
+                    }
                 }
             }
 
