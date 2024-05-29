@@ -1,13 +1,26 @@
-public with sharing class QueryBuilder {
+public with sharing class QueryBuilder implements Iterable<QueryPart> {
     private final List<QueryPart> parts;
 
-    public abstract class QueryPart {}
+    public abstract class QueryPart {
+        public abstract Object accept(QueryPartVisitor visitor);
+    }
+
+    public interface QueryPartVisitor {
+        Object visit(SelectPart part);
+        Object visit(LimitPart part);
+        Object visit(FromPart part);
+        Object visit(EmptyPart part); // Probably doesn't need to accept visitors.
+    }
 
     public class SelectPart extends QueryPart {
         public final Set<String> fields { get; set; }
 
         public SelectPart(Set<String> fields) {
             this.fields = fields;
+        }
+
+        public override Object accept(QueryPartVisitor visitor) {
+            return visitor.visit(this);
         }
     }
 
@@ -17,6 +30,10 @@ public with sharing class QueryBuilder {
         public LimitPart(Integer limitAmount) {
             this.limitAmount = limitAmount;
         }
+
+        public override Object accept(QueryPartVisitor visitor) {
+            return visitor.visit(this);
+        }
     }
 
     public class FromPart extends QueryPart {
@@ -25,14 +42,22 @@ public with sharing class QueryBuilder {
         public FromPart(String objectType) {
             this.objectType = objectType;
         }
+
+        public override Object accept(QueryPartVisitor visitor) {
+            return visitor.visit(this);
+        }
     }
 
-    public class EmptyPart extends QueryPart {}
+    public class EmptyPart extends QueryPart {
+        public override Object accept(QueryPartVisitor visitor) {
+            return visitor.visit(this);
+        }
+    }
 
     private QueryBuilder(String objectType) {
         this.parts = new List<QueryPart> {
-            new FromPart(objectType), // 0
-            new SelectPart(new Set<String>{ 'Id' }), // 1
+            new SelectPart(new Set<String>{ 'Id' }), // 0
+            new FromPart(objectType), // 1
             new EmptyPart(), // WHERE CLAUSE // 2
             new EmptyPart(), // ORDER BY // 3
             new LimitPart(null), // LIMIT // 4
@@ -46,13 +71,13 @@ public with sharing class QueryBuilder {
 
     public QueryBuilder selectFields(Set<String> fields) {
         Set<String> fieldsToAdd = fields ?? new Set<String>();
-        SelectPart selectPart = (SelectPart)this.parts[1];
+        SelectPart selectPart = (SelectPart)this.parts[0];
         selectPart.fields.addAll(fieldsToAdd);
         return this;
     }
 
     public QueryBuilder selectField(String fieldName) {
-        SelectPart selectPart = (SelectPart)this.parts[1];
+        SelectPart selectPart = (SelectPart)this.parts[0];
         selectPart.fields.add(fieldName);
         return this;
     }
@@ -66,14 +91,18 @@ public with sharing class QueryBuilder {
     // Getters
 
     public FromPart getFrom() {
-        return (FromPart)this.parts[0];
+        return (FromPart)this.parts[1];
     }
 
     public SelectPart getSelectPart() {
-        return (SelectPart)this.parts[1];
+        return (SelectPart)this.parts[0];
     }
 
     public LimitPart getLimitAmount() {
         return (LimitPart)this.parts[4];
+    }
+
+    public Iterator<QueryBuilder.QueryPart> iterator() {
+        return this.parts.iterator();
     }
 }
