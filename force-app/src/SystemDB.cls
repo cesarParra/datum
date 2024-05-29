@@ -8,12 +8,13 @@ public class SystemDB extends QDB {
     }
 
     public override List<SObject> query(QueryBuilder queryBuilder) {
-        String objectType = queryBuilder.getFrom();
-        String fieldString = String.join(queryBuilder.getFields(), ',');
+        String objectType = ((QueryBuilder.FromPart)queryBuilder.getFrom()).objectType;
+        String fieldString = String.join(((QueryBuilder.SelectPart)queryBuilder.getSelectPart()).fields, ',');
 
         String query = 'SELECT ' + fieldString + ' FROM ' + objectType;
-        if (queryBuilder.getLimitAmount() != null) {
-            query += ' LIMIT ' + queryBuilder.getLimitAmount();
+        Integer limitAmount = ((QueryBuilder.LimitPart)queryBuilder.getLimitAmount()).limitAmount;
+        if (limitAmount != null) {
+            query += ' LIMIT ' + limitAmount;
         }
 
         return Database.query(query);

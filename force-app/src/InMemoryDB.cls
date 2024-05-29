@@ -12,15 +12,15 @@ public class InMemoryDB extends QDB {
     }
 
     public override List<SObject> query(QueryBuilder queryBuilder) {
-        Integer limitAmount = queryBuilder.getLimitAmount();
+        Integer limitAmount = ((QueryBuilder.LimitPart)queryBuilder.getLimitAmount()).limitAmount;
         List<SObject> filteredRecords = new List<SObject>();
-        String fromObject = queryBuilder.getFrom();
+        String fromObject = ((QueryBuilder.FromPart)queryBuilder.getFrom()).objectType;
         for (SObject currentRecord : records) {
             SObjectType type = currentRecord.getSObjectType();
             if (type.getDescribe().getName().equalsIgnoreCase(fromObject)) {
                 SObjectBuilder builder = SObjectBuilder.of(type);
 
-                for (String queriedField : queryBuilder.getFields()) {
+                for (String queriedField : ((QueryBuilder.SelectPart)queryBuilder.getSelectPart()).fields) {
                     builder.put(queriedField, currentRecord.get(queriedField));
                 }
 
