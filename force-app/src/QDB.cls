@@ -27,7 +27,12 @@ public abstract class QDB {
             String objectType = queryBuilder.getFrom();
             String fieldString = String.join(queryBuilder.getFields(), ',');
 
-            return Database.query('SELECT ' + fieldString + ' FROM ' + objectType);
+            String query = 'SELECT ' + fieldString + ' FROM ' + objectType;
+            if (queryBuilder.getLimitAmount() != null) {
+                query += ' LIMIT ' + queryBuilder.getLimitAmount();
+            }
+
+            return Database.query(query);
         }
     }
 

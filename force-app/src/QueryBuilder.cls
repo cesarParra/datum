@@ -1,6 +1,7 @@
 public with sharing class QueryBuilder {
     private final String objectType;
     private final Set<String> fields;
+    private Integer limitAmount;
 
     private QueryBuilder(String objectType) {
         this.objectType = objectType;
@@ -22,11 +23,23 @@ public with sharing class QueryBuilder {
         return this;
     }
 
+    public QueryBuilder withLimitAmount(Integer limitAmount) {
+        this.limitAmount = limitAmount;
+        return this;
+    }
+
+    // Getters
+
     public String getFrom() {
         return objectType;
     }
 
     public Set<String> getFields() {
         return fields;
+    }
+
+    // Beware: This can return null
+    public Integer getLimitAmount() {
+        return limitAmount;
     }
 }

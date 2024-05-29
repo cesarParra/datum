@@ -157,10 +157,29 @@ private class QueryBuilderTest {
         Assert.areEqual(account.Name, accounts[0].Name);
     }
 
+    @IsTest
+    static void canSelectUsingLimit_salesforceDatabase() {
+        QDB.useSystemDB();
+        QDB.getInstance().doInsert(
+            new List<SObject>{
+                new Account(Name = 'Test Account 1'),
+                new Account(Name = 'Test Account 2')
+            }
+        );
+
+        QueryBuilder builder = QueryBuilder.of('Account')
+            .selectFields(new Set<String>{'Name'})
+            .withLimitAmount(1);
+
+        List<Account> accounts = QDB.getInstance().query(builder);
+
+        Assert.areEqual(1, accounts.size());
+    }
+
+    // TODO: LIMIT
     // TODO: Can query specific fields out of an object
     // TODO: Can query parent fields
     // TODO: Can subquery
-    // TODO: LIMIT
     // TODO: Offset
     // TODO: Where clause
     // TODO: Order by
