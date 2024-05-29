@@ -50,20 +50,19 @@ public abstract class QDB {
             for (SObject currentRecord : records) {
                 SObjectType type = currentRecord.getSObjectType();
                 if (type.getDescribe().getName().equalsIgnoreCase(fromObject)) {
-                    SObject newRecord = type.newSObject(currentRecord.Id);
+                    SObjectBuilder builder = SObjectBuilder.of(type);
 
                     for (String queriedField : queryBuilder.getFields()) {
-                        newRecord.put(queriedField, currentRecord.get(queriedField));
+                        builder.put(queriedField, currentRecord.get(queriedField));
                     }
 
-                    filteredRecords.add(newRecord);
+                    filteredRecords.add(builder.build());
                 }
             }
 
             return filteredRecords;
         }
     }
-
 
     public abstract void doInsert(SObject recordToInsert);
     public abstract void doInsert(List<SObject> recordsToInsert);

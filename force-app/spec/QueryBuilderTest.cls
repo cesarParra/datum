@@ -51,7 +51,7 @@ private class QueryBuilderTest {
         Contact someContact = new Contact(LastName = 'Test Contact');
         Account someAccount = new Account(Name = 'Test Account');
         QDB.getInstance().doInsert(
-            new List<SObject> {
+            new List<SObject>{
                 someContact,
                 someAccount
             }
@@ -82,7 +82,7 @@ private class QueryBuilderTest {
         Account account = new Account(Name = 'Test Account');
         QDB.getInstance().doInsert(account);
 
-        QueryBuilder builder = QueryBuilder.of('Account').selectFields(new Set<String> { 'Name' });
+        QueryBuilder builder = QueryBuilder.of('Account').selectFields(new Set<String>{'Name'});
 
         List<Account> accounts = QDB.getInstance().query(builder);
 
@@ -121,9 +121,30 @@ private class QueryBuilderTest {
         Assert.isNull(accounts[0].Name);
     }
 
-    // TODO: If fields are null then we are handling it
+    @IsTest
+    static void canSelectSpecificFieldsFromAnObject_canInsertWithNonWritableFieldsIntoTheDatabase() {
+        Account account = (Account) SObjectBuilder.of(Account.SObjectType)
+            .put('Name', 'Test Account')
+            .put('CreatedDate', Datetime.now())
+            .build();
+        QDB.getInstance().doInsert(account);
+
+        QueryBuilder builder = QueryBuilder.of('Account').selectFields(new Set<String>{'Name', 'CreatedDate'});
+
+        List<Account> accounts = QDB.getInstance().query(builder);
+
+        Assert.areEqual(1, accounts.size());
+        Assert.areEqual(account.Id, accounts[0].Id);
+        Assert.areEqual(account.Name, accounts[0].Name);
+    }
 
     // TODO: Can query specific fields out of an object
+    // TODO: Can query parent fields
+    // TODO: Can subquery
+    // TODO: LIMIT
+    // TODO: Offset
+    // TODO: Where clause
+    // TODO: Order by
 
     // TODO: Be able to specify an "of" that is an SobjectType and not a string
     // TODO: When the "of" overload using a string gets used, there should be validation to ensure that a correct SObjecttype is used
