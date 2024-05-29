@@ -17,6 +17,11 @@ public with sharing class QueryBuilder {
         return this;
     }
 
+    public QueryBuilder selectField(String fieldName) {
+        this.fields.add(fieldName);
+        return this;
+    }
+
     public String getFrom() {
         return objectType;
     }

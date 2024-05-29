@@ -138,6 +138,25 @@ private class QueryBuilderTest {
         Assert.areEqual(account.Name, accounts[0].Name);
     }
 
+    @IsTest
+    static void canSelectOneFieldAtATime() {
+        Account account = (Account) SObjectBuilder.of(Account.SObjectType)
+            .put('Name', 'Test Account')
+            .put('CreatedDate', Datetime.now())
+            .build();
+        QDB.getInstance().doInsert(account);
+
+        QueryBuilder builder = QueryBuilder.of('Account')
+            .selectField('Name')
+            .selectField('CreatedDate');
+
+        List<Account> accounts = QDB.getInstance().query(builder);
+
+        Assert.areEqual(1, accounts.size());
+        Assert.areEqual(account.Id, accounts[0].Id);
+        Assert.areEqual(account.Name, accounts[0].Name);
+    }
+
     // TODO: Can query specific fields out of an object
     // TODO: Can query parent fields
     // TODO: Can subquery
