@@ -28,6 +28,8 @@ private class QueryBuilderTest {
         // When I run the query
         List<Account> accounts = QDB.getInstance().query(builder);
 
+        System.debug(accounts);
+
         Assert.areEqual(1, accounts.size());
         Assert.areEqual(account.Id, accounts[0].Id);
     }
@@ -115,6 +117,7 @@ private class QueryBuilderTest {
         QueryBuilder builder = QueryBuilder.of('Account');
 
         List<Account> accounts = QDB.getInstance().query(builder);
+        System.debug(accounts);
 
         Assert.areEqual(1, accounts.size());
         Assert.areEqual(account.Id, accounts[0].Id);

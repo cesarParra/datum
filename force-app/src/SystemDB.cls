@@ -9,26 +9,36 @@ public class SystemDB extends QDB implements QueryBuilder.QueryPartVisitor {
 
     public override List<SObject> query(QueryBuilder queryBuilder) {
         String query = '';
+
         for (QueryBuilder.QueryPart part : queryBuilder) {
-            query += (String)part.accept(this);
+            String result = (String) part.accept(this);
+            if(result != null) {
+                query = result;
+            }
         }
 
         return Database.query(query);
     }
 
+    private String currentQuery = 'SELECT {1} FROM {0}{4}';
+
     public Object visit(QueryBuilder.SelectPart part) {
-        return 'SELECT ' + String.join(part.fields, ',');
+        this.currentQuery = currentQuery.replace('{1}', String.join(part.fields, ','));
+        return this.currentQuery;
     }
 
     public Object visit(QueryBuilder.LimitPart part) {
-        return part.limitAmount != null ? ' LIMIT ' + part.limitAmount : '';
+        String result = part.limitAmount != null ? ' LIMIT ' + part.limitAmount : '';
+        this.currentQuery = currentQuery.replace('{4}', result);
+        return this.currentQuery;
     }
 
     public Object visit(QueryBuilder.FromPart part) {
-        return ' FROM ' + part.objectType;
+        this.currentQuery = currentQuery.replace('{0}', part.objectType);
+        return this.currentQuery;
     }
 
     public Object visit(QueryBuilder.EmptyPart part) {
-        return '';
+        return null;
     }
 }
