@@ -1,5 +1,7 @@
-public class InMemoryDB extends QDB {
+public class InMemoryDB extends QDB implements QueryBuilder.QueryPartVisitor {
     final List<SObject> records = new List<SObject>();
+    List<SObject> filteredRecords = null;
+
     public override void doInsert(SObject recordToInsert) {
         recordToInsert.Id = IdGenerator.generate(recordToInsert.getSObjectType());
         records.add(recordToInsert);
@@ -12,24 +14,56 @@ public class InMemoryDB extends QDB {
     }
 
     public override List<SObject> query(QueryBuilder queryBuilder) {
-        Integer limitAmount = queryBuilder.getLimitAmount();
-        List<SObject> filteredRecords = new List<SObject>();
-        String fromObject = queryBuilder.getFrom();
+        this.filteredRecords = new List<SObject>();
+        for (QueryBuilder.QueryPart part : queryBuilder) {
+            part.accept(this);
+        }
+
+        return filteredRecords;
+    }
+
+    public Object visit(QueryBuilder.FromPart part) {
+        String fromObject = part.objectType;
         for (SObject currentRecord : records) {
             SObjectType type = currentRecord.getSObjectType();
             if (type.getDescribe().getName().equalsIgnoreCase(fromObject)) {
-                SObjectBuilder builder = SObjectBuilder.of(type);
-
-                for (String queriedField : queryBuilder.getFields()) {
-                    builder.put(queriedField, currentRecord.get(queriedField));
-                }
-
-                if (limitAmount == null || filteredRecords.size() < limitAmount) {
-                    filteredRecords.add(builder.build());
-                }
+                filteredRecords.add(currentRecord);
             }
         }
 
+        return filteredRecords;
+    }
+
+    public Object visit(QueryBuilder.SelectPart part) {
+        System.debug('Selecting fields ' + part.fields);
+        List<SObject> filteredRecords = new List<SObject>();
+        for (SObject currentRecord : this.filteredRecords) {
+            SObjectType type = currentRecord.getSObjectType();
+            SObjectBuilder builder = SObjectBuilder.of(type);
+            System.debug(builder);
+            for (String queriedField : part.fields) {
+                builder.put(queriedField, currentRecord.get(queriedField));
+            }
+
+            filteredRecords.add(builder.build());
+        }
+
+        this.filteredRecords = filteredRecords;
+        return this.filteredRecords;
+    }
+
+    public Object visit(QueryBuilder.LimitPart part) {
+        Integer limitAmount = part.limitAmount;
+        for (Integer i = 0; i < filteredRecords.size(); i++) {
+            if (i >= limitAmount) {
+                filteredRecords.remove(i);
+            }
+        }
+
+        return filteredRecords;
+    }
+
+    public Object visit(QueryBuilder.EmptyPart part) {
         return filteredRecords;
     }
 }
