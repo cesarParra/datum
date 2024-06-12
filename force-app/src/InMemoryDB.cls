@@ -1,5 +1,5 @@
 public class InMemoryDB extends QDB implements QueryBuilder.QueryPartVisitor {
-    final List<SObject> records = new List<SObject>();
+    final Map<Id, SObject> recordsById = new Map<Id, SObject>();
     List<SObject> filteredRecords = null;
 
     public class QdbException extends Exception {}
@@ -8,17 +8,17 @@ public class InMemoryDB extends QDB implements QueryBuilder.QueryPartVisitor {
         recordToInsert.Id = IdGenerator.generate(recordToInsert.getSObjectType());
 
         Map<String, Object> populatedFields = recordToInsert.getPopulatedFieldsAsMap();
-        Map<Id, SObject> recordsInTheDbByTheirIds = new Map<Id, SObject>(records);
+        //Map<Id, SObject> recordsInTheDbByTheirIds = new Map<Id, SObject>(records);
         for (String currentlyPopulatedField : populatedFields.keySet()) {
             // TODO: This is not good logic
-            if (populatedFields.get(currentlyPopulatedField) instanceof Id) {
-                if (!recordsInTheDbByTheirIds.containsKey((Id)populatedFields.get(currentlyPopulatedField))) {
+            if (currentlyPopulatedField.toLowerCase() != 'id' && populatedFields.get(currentlyPopulatedField) instanceof Id) {
+                if (!recordsById.containsKey((Id)populatedFields.get(currentlyPopulatedField))) {
                     throw new DmlException('The parent does not exist');
                 }
             }
         }
 
-        records.add(recordToInsert);
+        recordsById.put(recordToInsert.Id, recordToInsert);
     }
 
     public override void doInsert(List<SObject> recordsToInsert) {
@@ -38,7 +38,7 @@ public class InMemoryDB extends QDB implements QueryBuilder.QueryPartVisitor {
 
     public Object visit(QueryBuilder.FromPart part) {
         String fromObject = part.objectType;
-        for (SObject currentRecord : records) {
+        for (SObject currentRecord : recordsById.values()) {
             SObjectType type = currentRecord.getSObjectType();
             if (type.getDescribe().getName().equalsIgnoreCase(fromObject)) {
                 filteredRecords.add(currentRecord);
