@@ -35,12 +35,10 @@ public class InMemoryDB extends QDB implements QueryBuilder.QueryPartVisitor {
     }
 
     public Object visit(QueryBuilder.SelectPart part) {
-        System.debug('Selecting fields ' + part.fields);
         List<SObject> filteredRecords = new List<SObject>();
         for (SObject currentRecord : this.filteredRecords) {
             SObjectType type = currentRecord.getSObjectType();
             SObjectBuilder builder = SObjectBuilder.of(type);
-            System.debug(builder);
             for (String queriedField : part.fields) {
                 builder.put(queriedField, currentRecord.get(queriedField));
             }
@@ -64,6 +62,17 @@ public class InMemoryDB extends QDB implements QueryBuilder.QueryPartVisitor {
     }
 
     public Object visit(QueryBuilder.EmptyPart part) {
+        return filteredRecords;
+    }
+
+    public Object visit(QueryBuilder.OffsetPart part) {
+        Integer offsetAmount = part.offsetAmount;
+        for (Integer i = 0; i < filteredRecords.size(); i++) {
+            if (i < offsetAmount) {
+                filteredRecords.remove(i);
+            }
+        }
+
         return filteredRecords;
     }
 }

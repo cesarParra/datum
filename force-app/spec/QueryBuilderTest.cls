@@ -197,11 +197,46 @@ private class QueryBuilderTest {
         Assert.areEqual(1, accounts.size());
     }
 
-    // TODO: LIMIT
+    @IsTest
+    static void canSelectUsingOffset_salesforceDatabase() {
+        QDB.useSystemDB();
+        QDB.getInstance().doInsert(
+            new List<SObject>{
+                new Account(Name = 'Test Account 1'),
+                new Account(Name = 'Test Account 2')
+            }
+        );
+
+        QueryBuilder builder = QueryBuilder.of('Account')
+            .selectFields(new Set<String>{'Name'})
+            .withOffsetAmount(1);
+
+        List<Account> accounts = QDB.getInstance().query(builder);
+
+        Assert.areEqual(1, accounts.size());
+    }
+
+    @IsTest
+    static void canSelectUsingOffset_inMemory() {
+        QDB.getInstance().doInsert(
+            new List<SObject>{
+                new Account(Name = 'Test Account 1'),
+                new Account(Name = 'Test Account 2')
+            }
+        );
+
+        QueryBuilder builder = QueryBuilder.of('Account')
+            .selectFields(new Set<String>{'Name'})
+            .withOffsetAmount(1);
+
+        List<Account> accounts = QDB.getInstance().query(builder);
+
+        Assert.areEqual(1, accounts.size());
+    }
+
     // TODO: Can query specific fields out of an object
     // TODO: Can query parent fields
     // TODO: Can subquery
-    // TODO: Offset
     // TODO: Where clause
     // TODO: Order by
 

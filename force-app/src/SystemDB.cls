@@ -20,7 +20,7 @@ public class SystemDB extends QDB implements QueryBuilder.QueryPartVisitor {
         return Database.query(query);
     }
 
-    private String currentQuery = 'SELECT {1} FROM {0}{4}';
+    private String currentQuery = 'SELECT {1} FROM {0}{4}{5}';
 
     public Object visit(QueryBuilder.SelectPart part) {
         this.currentQuery = currentQuery.replace('{1}', String.join(part.fields, ','));
@@ -39,6 +39,13 @@ public class SystemDB extends QDB implements QueryBuilder.QueryPartVisitor {
     }
 
     public Object visit(QueryBuilder.EmptyPart part) {
-        return null;
+        this.currentQuery = currentQuery.replace(part.replacer, '');
+        return this.currentQuery;
+    }
+
+    public Object visit(QueryBuilder.OffsetPart part) {
+        String result = part.offsetAmount != null ? ' OFFSET ' + part.offsetAmount : '';
+        this.currentQuery = currentQuery.replace('{5}', result);
+        return this.currentQuery;
     }
 }

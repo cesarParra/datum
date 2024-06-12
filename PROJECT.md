@@ -8,8 +8,7 @@
 [ ] WHERE
 [/] LIMIT
 [ ] Order By
-[ ] OFSSET
-[ ] WHERE
+[/] OFSSET
 
 ## Non-technical requirements
 [ ] Documentation
