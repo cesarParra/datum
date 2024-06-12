@@ -28,8 +28,6 @@ private class QueryBuilderTest {
         // When I run the query
         List<Account> accounts = QDB.getInstance().query(builder);
 
-        System.debug(accounts);
-
         Assert.areEqual(1, accounts.size());
         Assert.areEqual(account.Id, accounts[0].Id);
     }
@@ -117,7 +115,6 @@ private class QueryBuilderTest {
         QueryBuilder builder = QueryBuilder.of('Account');
 
         List<Account> accounts = QDB.getInstance().query(builder);
-        System.debug(accounts);
 
         Assert.areEqual(1, accounts.size());
         Assert.areEqual(account.Id, accounts[0].Id);
@@ -233,16 +230,4 @@ private class QueryBuilderTest {
 
         Assert.areEqual(1, accounts.size());
     }
-
-    // TODO: Can query specific fields out of an object
-    // TODO: Can query parent fields
-    // TODO: Can subquery
-    // TODO: Where clause
-    // TODO: Order by
-
-    // TODO: Be able to specify an "of" that is an SobjectType and not a string
-    // TODO: When the "of" overload using a string gets used, there should be validation to ensure that a correct SObjecttype is used
-
-    // FOR WAY LATER
-    // Update, Upsert, Delete, Unledete, Merge
 }
