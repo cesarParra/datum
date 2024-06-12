@@ -1,4 +1,13 @@
 public with sharing class QueryBuilder implements Iterable<QueryPart> {
+    public enum Parts {
+        FROM_PART,
+        SELECT_PART,
+        WHERE_PART,
+        ORDER_BY_PART,
+        LIMIT_PART,
+        OFFSET_PART
+    }
+
     private final List<QueryPart> parts;
 
     public abstract class QueryPart {
@@ -62,11 +71,10 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
     }
 
     public class EmptyPart extends QueryPart {
-        // TODO: This should not exist, because it is driven by a specific implementation. (breaking encapsulation)
-        public String replacer { get; set; }
+        public Parts partType { get; set; }
 
-        public EmptyPart(String replacer) {
-            this.replacer = replacer;
+        public EmptyPart(Parts partType) {
+            this.partType = partType;
         }
 
         public override Object accept(QueryPartVisitor visitor) {
@@ -78,10 +86,10 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
         this.parts = new List<QueryPart>{
             new FromPart(objectType), // 0
             new SelectPart(new Set<String>{'Id'}), // 1
-            new EmptyPart('{2}'), // WHERE CLAUSE // 2
-            new EmptyPart('{3}'), // ORDER BY // 3
+            new EmptyPart(QueryBuilder.Parts.WHERE_PART), // WHERE CLAUSE // 2
+            new EmptyPart(QueryBuilder.Parts.ORDER_BY_PART), // ORDER BY // 3
             new LimitPart(null), // LIMIT // 4
-            new EmptyPart('{5}') // OFFSET // 5
+            new EmptyPart(QueryBuilder.Parts.OFFSET_PART) // OFFSET // 5
         };
     }
 

@@ -1,4 +1,13 @@
 public class SystemDB extends QDB implements QueryBuilder.QueryPartVisitor {
+    private static final Map<QueryBuilder.Parts, String> REPLACER_BY_PART = new Map<QueryBuilder.Parts, String> {
+        QueryBuilder.Parts.FROM_PART => '{0}',
+        QueryBuilder.Parts.SELECT_PART => '{1}',
+        QueryBuilder.Parts.WHERE_PART => '{2}',
+        QueryBuilder.Parts.ORDER_BY_PART => '{3}',
+        QueryBuilder.Parts.LIMIT_PART => '{4}',
+        QueryBuilder.Parts.OFFSET_PART => '{5}'
+    };
+
     public override void doInsert(SObject recordToInsert) {
         Database.insert(recordToInsert);
     }
@@ -39,7 +48,7 @@ public class SystemDB extends QDB implements QueryBuilder.QueryPartVisitor {
     }
 
     public Object visit(QueryBuilder.EmptyPart part) {
-        this.currentQuery = currentQuery.replace(part.replacer, '');
+        this.currentQuery = currentQuery.replace(REPLACER_BY_PART.get(part.partType), '');
         return this.currentQuery;
     }
 
