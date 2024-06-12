@@ -8,12 +8,14 @@ public class InMemoryDB extends QDB implements QueryBuilder.QueryPartVisitor {
         recordToInsert.Id = IdGenerator.generate(recordToInsert.getSObjectType());
 
         Map<String, Object> populatedFields = recordToInsert.getPopulatedFieldsAsMap();
-        //Map<Id, SObject> recordsInTheDbByTheirIds = new Map<Id, SObject>(records);
+        SObjectType type = recordToInsert.getSObjectType();
+        Map<String, SObjectField> fieldsMap = type.getDescribe().fields.getMap();
         for (String currentlyPopulatedField : populatedFields.keySet()) {
-            // TODO: This is not good logic
-            if (currentlyPopulatedField.toLowerCase() != 'id' && populatedFields.get(currentlyPopulatedField) instanceof Id) {
-                if (!recordsById.containsKey((Id)populatedFields.get(currentlyPopulatedField))) {
-                    throw new DmlException('The parent does not exist');
+            if (currentlyPopulatedField.toLowerCase() != 'id') {
+                if (fieldsMap.get(currentlyPopulatedField).getDescribe().getType() == DisplayType.REFERENCE) {
+                    if (!recordsById.containsKey((Id)populatedFields.get(currentlyPopulatedField))) {
+                        throw new DmlException('The parent does not exist');
+                    }
                 }
             }
         }
