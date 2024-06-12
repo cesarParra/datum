@@ -230,4 +230,27 @@ private class QueryBuilderTest {
 
         Assert.areEqual(1, accounts.size());
     }
+
+    @IsTest
+    static void canSelectParentFields_systemDb() {
+        QDB.useSystemDB();
+        Account parentAccount = new Account(Name = 'Parent Account');
+        QDB.getInstance().doInsert(parentAccount);
+
+        Account childAccount = new Account(Name = 'Child Account', ParentId = parentAccount.Id);
+        QDB.getInstance().doInsert(childAccount);
+
+        QueryBuilder builder = QueryBuilder.of('Account')
+            .selectField('Name')
+            .selectField('Parent.Name');
+
+        List<Account> accounts = QDB.getInstance().query(builder);
+
+        Assert.areEqual(2, accounts.size());
+        for (Account account : accounts) {
+            if (account.Name == 'Child Account') {
+                Assert.areEqual('Parent Account', account.Parent.Name);
+            }
+        }
+    }
 }
