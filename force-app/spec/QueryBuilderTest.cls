@@ -306,7 +306,7 @@ private class QueryBuilderTest {
         } catch (DmlException e) {
             Assert.isTrue(true, 'The expected exception was thrown');
         } catch (Exception e) {
-            Assert.fail('An exception was thrown');
+            Assert.fail('An unexpected exception was thrown');
         }
     }
 }
