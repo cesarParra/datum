@@ -257,6 +257,7 @@ private class QueryBuilderTest {
         Assert.fail('Child Account not found');
     }
 
+    // TODO: On hold
 //    @IsTest
 //    static void canSelectParentFields_inMemoryDb() {
 //        Account parentAccount = new Account(Name = 'Parent Account');
@@ -275,7 +276,37 @@ private class QueryBuilderTest {
 //        for (Account account : accounts) {
 //            if (account.Name == 'Child Account') {
 //                Assert.areEqual('Parent Account', account.Parent.Name);
+//                return;
 //            }
 //        }
+//
+//        Assert.fail('Child Account not found');
 //    }
+
+    @IsTest
+    static void whenInsertingARelationshipTheDatabaseValidatesThatTheParentExists_systemDb() {
+        QDB.useSystemDB();
+        Account childAccount = new Account(Name = 'Child Account', ParentId = '001000000000000AAA');
+        try {
+            QDB.getInstance().doInsert(childAccount);
+            Assert.fail('An exception should have been thrown');
+        } catch (DmlException e) {
+            Assert.isTrue(true, 'The expected exception was thrown');
+        } catch (Exception e) {
+            Assert.fail('An exception was thrown');
+        }
+    }
+
+    @IsTest
+    static void whenInsertingARelationshipTheDatabaseValidatesThatTheParentExists() {
+        Account childAccount = new Account(Name = 'Child Account', ParentId = '001000000000000AAA');
+        try {
+            QDB.getInstance().doInsert(childAccount);
+            Assert.fail('An exception should have been thrown');
+        } catch (DmlException e) {
+            Assert.isTrue(true, 'The expected exception was thrown');
+        } catch (Exception e) {
+            Assert.fail('An exception was thrown');
+        }
+    }
 }
