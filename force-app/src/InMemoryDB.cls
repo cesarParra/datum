@@ -56,6 +56,11 @@ public class InMemoryDB extends QDB implements QueryBuilder.QueryPartVisitor {
             SObjectType type = currentRecord.getSObjectType();
             SObjectBuilder builder = SObjectBuilder.of(type);
             for (String queriedField : part.fields) {
+                // Check if this is a relationship
+                // If it is, grab the parent record from the db
+                // Just grab the fields that are queried for that parent
+                // on the builder, add a relationship to the record
+
                 builder.put(queriedField, currentRecord.get(queriedField));
             }
 

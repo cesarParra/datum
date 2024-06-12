@@ -17,6 +17,12 @@ public with sharing class SObjectBuilder {
         return this;
     }
 
+    public SObjectBuilder putParent(String relationshipName, SObjectBuilder parentBuilder) {
+        SObject parent = parentBuilder.build();
+        fieldValues.put(relationshipName, parent);
+        return this;
+    }
+
     public SObject build() {
         this.fieldValues.put('attributes', new Map<String, Object>{'type' => sObjectType.getDescribe().getName()});
         String serialized = JSON.serialize(fieldValues);
