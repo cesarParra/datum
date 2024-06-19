@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <project version="4">
   <component name="IlluminatedCloudSettings">
     <option name="connections">
@@ -7,7 +7,10 @@
           <option name="connectionName" value="datum" />
           <option name="connectionType" value="SFDX" />
           <option name="defaultModuleName" value="datum" />
-          <option name="offlineSymbolTablePath" value="$PROJECT_DIR$/IlluminatedCloud/datum/OfflineSymbolTable.zip" />
+          <option
+            name="offlineSymbolTablePath"
+            value="$PROJECT_DIR$/IlluminatedCloud/datum/OfflineSymbolTable.zip"
+          />
         </IlluminatedCloudConnection>
       </list>
     </option>

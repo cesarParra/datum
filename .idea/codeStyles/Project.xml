@@ -2,7 +2,10 @@
   <code_scheme name="Project" version="173">
     <ApexCodeStyleSettings>
       <option name="USAGE_CASE_APEX_CHANGE_CASE_WHEN_FORMATTING" value="true" />
-      <option name="KEYWORD_CASE_SOQL_SOSL_CHANGE_CASE_WHEN_FORMATTING" value="true" />
+      <option
+        name="KEYWORD_CASE_SOQL_SOSL_CHANGE_CASE_WHEN_FORMATTING"
+        value="true"
+      />
     </ApexCodeStyleSettings>
     <HTMLCodeStyleSettings>
       <option name="HTML_SPACE_INSIDE_EMPTY_TAG" value="true" />
@@ -24,8 +27,14 @@
       <option name="SPACES_WITHIN_IMPORTS" value="true" />
     </TypeScriptCodeStyleSettings>
     <VueCodeStyleSettings>
-      <option name="INTERPOLATION_NEW_LINE_AFTER_START_DELIMITER" value="false" />
-      <option name="INTERPOLATION_NEW_LINE_BEFORE_END_DELIMITER" value="false" />
+      <option
+        name="INTERPOLATION_NEW_LINE_AFTER_START_DELIMITER"
+        value="false"
+      />
+      <option
+        name="INTERPOLATION_NEW_LINE_BEFORE_END_DELIMITER"
+        value="false"
+      />
     </VueCodeStyleSettings>
     <codeStyleSettings language="Apex">
       <option name="KEEP_SIMPLE_BLOCKS_IN_ONE_LINE" value="true" />
