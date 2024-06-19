@@ -19,4 +19,8 @@ public with sharing class SObjectDescribeUtil {
 
     return null;
   }
+
+  public static SObjectType getFromName(String fromName) {
+    return Schema.getGlobalDescribe().get(fromName);
+  }
 }

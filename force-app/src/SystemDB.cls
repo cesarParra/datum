@@ -34,7 +34,7 @@ public class SystemDB extends QDB implements QueryPartVisitor {
   public Object visit(SelectPart part) {
     this.currentQuery = currentQuery.replace(
       '{1}',
-      String.join(part.fields, ',')
+      String.join(part.toSet(), ',')
     );
     return this.currentQuery;
   }

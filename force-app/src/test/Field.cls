@@ -1,9 +1,11 @@
 public with sharing class Field {
+  private final String fullName;
   private final SObjectType type;
   private final SObjectType relationshipType;
   private final String name;
 
   public Field(SObjectType type, String name) {
+    this.fullName = name;
     this.type = type;
     if (name.contains('.')) {
       List<String> parts = name.split('\\.');
@@ -29,5 +31,9 @@ public with sharing class Field {
 
   public SObjectType getRelationshipType() {
     return relationshipType;
+  }
+
+  public String getFullName() {
+    return fullName;
   }
 }

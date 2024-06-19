@@ -1,14 +1,16 @@
 public with sharing class QueryBuilder implements Iterable<QueryPart> {
-  private final List<QueryPart> parts;
+  private final SObjectType parentType;
+  private final List<QueryPart> partsList;
 
   public abstract class QueryPart {
     public abstract Object accept(QueryPartVisitor visitor);
   }
 
   private QueryBuilder(String objectType) {
-    this.parts = new List<QueryPart>{
+    this.parentType = Schema.getGlobalDescribe().get(objectType);
+    this.partsList = new List<QueryPart>{
       new FromPart(objectType), // 0
-      new SelectPart(new Set<String>{ 'Id' }), // 1
+      new SelectPart(parentType, new Set<String>{ 'Id' }), // 1
       new EmptyPart(Parts.WHERE_PART), // WHERE CLAUSE // 2
       new EmptyPart(Parts.ORDER_BY_PART), // ORDER BY // 3
       new LimitPart(null), // LIMIT // 4
@@ -21,31 +23,38 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
   }
 
   public QueryBuilder selectFields(Set<String> fields) {
-    Set<String> fieldsToAdd = fields ?? new Set<String>();
-    SelectPart selectPart = (SelectPart) this.parts[1];
-    selectPart.fields.addAll(fieldsToAdd);
+    if (fields == null) {
+      return this;
+    }
+    for (String field : fields) {
+      this.selectField(field);
+    }
     return this;
   }
 
   public QueryBuilder selectField(String fieldName) {
-    SelectPart selectPart = (SelectPart) this.parts[1];
-    selectPart.fields.add(fieldName);
+    if (fieldName == null) {
+      return this;
+    }
+    SelectPart selectPart = (SelectPart) this.partsList[1];
+    Field newField = new Field(this.parentType, fieldName);
+    selectPart.fields.add(newField);
     return this;
   }
 
   public QueryBuilder withLimitAmount(Integer limitAmount) {
     LimitPart part = new LimitPart(limitAmount);
-    this.parts[4] = part;
+    this.partsList[4] = part;
     return this;
   }
 
   public QueryBuilder withOffsetAmount(Integer offsetAmount) {
     OffsetPart part = new OffsetPart(offsetAmount);
-    this.parts[5] = part;
+    this.partsList[5] = part;
     return this;
   }
 
   public Iterator<QueryBuilder.QueryPart> iterator() {
-    return this.parts.iterator();
+    return this.partsList.iterator();
   }
 }
