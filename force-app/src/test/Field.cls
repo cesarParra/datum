@@ -1,29 +1,30 @@
 public with sharing class Field {
-    private final String relationshipName;
     private final SObjectType type;
-    private final SObjectType relationshipType;
     private final String name;
+    private final Relationship relationship;
 
     public class Relationship {
         public String relationName;
         public SObjectType relationType;
         public String fieldName;
+
+        public Relationship(String relationName, SObjectType relationType, String fieldName) {
+            this.relationName = relationName;
+            this.relationType = relationType;
+            this.fieldName = fieldName;
+        }
     }
 
     public Field(SObjectType type, String name) {
         this.type = type;
         if (name.contains('.')) {
             List<String> parts = name.split('\\.');
-            this.relationshipName = parts[0];
-            // Get the relationship type
-            this.relationshipType = SObjectDescribeUtil.getSObjectTypeByRelationshipName(
-                type,
-                this.relationshipName
-            );
+            Relationship relationship = new Relationship(parts[0], SObjectDescribeUtil.getSObjectTypeByRelationshipName(type, parts[0]), parts[1]);
+            this.relationship = relationship;
             this.name = parts[1];
         } else {
             this.name = name;
-            this.relationshipType = null;
+            this.relationship = null;
         }
     }
 
@@ -32,14 +33,14 @@ public with sharing class Field {
     }
 
     public Boolean isRelationship() {
-        return relationshipType != null;
+        return relationship != null;
     }
 
-    public SObjectType getRelationshipType() {
-        return relationshipType;
+    public Relationship getRelationship() {
+        return relationship;
     }
 
     public String getFullName() {
-        return isRelationship() ? relationshipName + '.' + name : name;
+        return isRelationship() ? relationship.relationName + '.' + name : name;
     }
 }

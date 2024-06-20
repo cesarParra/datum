@@ -1,11 +1,17 @@
 public class SelectPart extends QueryBuilder.QueryPart {
+    private final SObjectType objectType;
     public final Set<Field> fields { get; set; }
 
-    public SelectPart(SObjectType parentType, Set<String> fields) {
+    public SelectPart(SObjectType objectType, Set<String> initialFields) {
+        this.objectType = objectType;
         this.fields = new Set<Field>();
-        for (String fieldAsString : fields) {
-            this.fields.add(new Field(parentType, fieldAsString));
+        for (String fieldAsString : initialFields) {
+            this.add(fieldAsString);
         }
+    }
+
+    public void add(String field) {
+        this.fields.add(new Field(this.objectType, field));
     }
 
     public override Object accept(QueryPartVisitor visitor) {
@@ -20,14 +26,15 @@ public class SelectPart extends QueryBuilder.QueryPart {
         return fieldNames;
     }
 
-    public Map<SObjectType, List<Field>> relationshipFields() {
-        Map<SObjectType, List<Field>> relationshipFields = new Map<SObjectType, List<Field>>();
+    public Map<String, List<Field>> getRelationshipFieldsByRelationshipName() {
+        Map<String, List<Field>> relationshipFields = new Map<String, List<Field>>();
         for (Field field : this.fields) {
             if (field.isRelationship()) {
-                if (!relationshipFields.containsKey(field.getRelationshipType())) {
-                    relationshipFields.put(field.getRelationshipType(), new List<Field>());
+                String relationshipName = field.getRelationship().relationName;
+                if (!relationshipFields.containsKey(relationshipName)) {
+                    relationshipFields.put(relationshipName, new List<Field>());
                 }
-                relationshipFields.get(field.getRelationshipType()).add(field);
+                relationshipFields.get(relationshipName).add(field);
             }
         }
         return relationshipFields;

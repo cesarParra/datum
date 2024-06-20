@@ -1,5 +1,5 @@
 public with sharing class QueryBuilder implements Iterable<QueryPart> {
-  private final SObjectType parentType;
+  private final SObjectType targetType;
   private final List<QueryPart> partsList;
 
   public abstract class QueryPart {
@@ -7,10 +7,10 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
   }
 
   private QueryBuilder(String objectType) {
-    this.parentType = Schema.getGlobalDescribe().get(objectType);
+    this.targetType = Schema.getGlobalDescribe().get(objectType);
     this.partsList = new List<QueryPart>{
       new FromPart(objectType), // 0
-      new SelectPart(parentType, new Set<String>{ 'Id' }), // 1
+      new SelectPart(targetType, new Set<String>{ 'Id' }), // 1
       new EmptyPart(Parts.WHERE_PART), // WHERE CLAUSE // 2
       new EmptyPart(Parts.ORDER_BY_PART), // ORDER BY // 3
       new LimitPart(null), // LIMIT // 4
@@ -37,8 +37,7 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
       return this;
     }
     SelectPart selectPart = (SelectPart) this.partsList[1];
-    Field newField = new Field(this.parentType, fieldName);
-    selectPart.fields.add(newField);
+    selectPart.add(fieldName);
     return this;
   }
 

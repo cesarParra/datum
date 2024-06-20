@@ -33,14 +33,21 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
         for (SObject currentRecord : this.filteredRecords) {
             SObjectType type = currentRecord.getSObjectType();
             SObjectBuilder builder = SObjectBuilder.of(type);
-            for (SObjectType relationshipType : part.relationshipFields().keySet()) {
-                SObjectBuilder parentBuilder = SObjectBuilder.of(relationshipType);
-                // TODO: Add relationships.
-                builder.putParent('Parent', parentBuilder);
-            }
-
             for (Field queriedField : part.baseFields()) {
                 builder.put(queriedField.getName(), currentRecord.get(queriedField.getName()));
+            }
+
+            for (String relationshipName : part.getRelationshipFieldsByRelationshipName().keySet()) {
+                List<Field> relationshipFields = part.getRelationshipFieldsByRelationshipName().get(relationshipName);
+                SObject relatedRecord = this.db.getParent(currentRecord.Id, relationshipName);
+                if (relatedRecord == null) {
+                    continue;
+                }
+                SObjectBuilder relatedRecordBuilder = SObjectBuilder.of(relatedRecord.getSObjectType());
+                for (Field relationshipField : relationshipFields) {
+                    relatedRecordBuilder.put(relationshipField.getName(), relatedRecord.get(relationshipField.getName()));
+                }
+                builder.putParent(relationshipName, relatedRecordBuilder);
             }
 
             filteredRecords.add(builder.build());

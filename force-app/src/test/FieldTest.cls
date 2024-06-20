@@ -48,6 +48,6 @@ private class FieldTest {
     Field field = new Field(type, fieldName);
 
     Assert.isTrue(field.isRelationship());
-    Assert.areEqual(Account.SObjectType, field.getRelationshipType());
+    Assert.areEqual(Account.SObjectType, field.getRelationship().relationType);
   }
 }
