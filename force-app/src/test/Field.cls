@@ -1,39 +1,45 @@
 public with sharing class Field {
-  private final String fullName;
-  private final SObjectType type;
-  private final SObjectType relationshipType;
-  private final String name;
+    private final String relationshipName;
+    private final SObjectType type;
+    private final SObjectType relationshipType;
+    private final String name;
 
-  public Field(SObjectType type, String name) {
-    this.fullName = name;
-    this.type = type;
-    if (name.contains('.')) {
-      List<String> parts = name.split('\\.');
-      String relationshipName = parts[0];
-      // Get the relationship type
-      this.relationshipType = SObjectDescribeUtil.getSObjectTypeByRelationshipName(
-        type,
-        relationshipName
-      );
-      this.name = parts[1];
-    } else {
-      this.name = name;
+    public class Relationship {
+        public String relationName;
+        public SObjectType relationType;
+        public String fieldName;
     }
-  }
 
-  public String getName() {
-    return name;
-  }
+    public Field(SObjectType type, String name) {
+        this.type = type;
+        if (name.contains('.')) {
+            List<String> parts = name.split('\\.');
+            this.relationshipName = parts[0];
+            // Get the relationship type
+            this.relationshipType = SObjectDescribeUtil.getSObjectTypeByRelationshipName(
+                type,
+                this.relationshipName
+            );
+            this.name = parts[1];
+        } else {
+            this.name = name;
+            this.relationshipType = null;
+        }
+    }
 
-  public Boolean isRelationship() {
-    return relationshipType != null;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public SObjectType getRelationshipType() {
-    return relationshipType;
-  }
+    public Boolean isRelationship() {
+        return relationshipType != null;
+    }
 
-  public String getFullName() {
-    return fullName;
-  }
+    public SObjectType getRelationshipType() {
+        return relationshipType;
+    }
+
+    public String getFullName() {
+        return isRelationship() ? relationshipName + '.' + name : name;
+    }
 }

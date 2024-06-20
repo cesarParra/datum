@@ -1,6 +1,5 @@
-public class InMemoryDB extends QDB implements QueryPartVisitor {
+public class InMemoryDB extends QDB {
   final Map<Id, SObject> recordsById = new Map<Id, SObject>();
-  List<SObject> filteredRecords = null;
 
   public class QdbException extends Exception {
   }
@@ -38,65 +37,11 @@ public class InMemoryDB extends QDB implements QueryPartVisitor {
   }
 
   public override List<SObject> query(QueryBuilder queryBuilder) {
-    this.filteredRecords = new List<SObject>();
-    for (QueryBuilder.QueryPart part : queryBuilder) {
-      part.accept(this);
-    }
-
-    return filteredRecords;
+    InMemoryDBVisitor visitor = new InMemoryDBVisitor(this);
+    return visitor.query(queryBuilder);
   }
 
-  public Object visit(FromPart part) {
-    String fromObject = part.objectType;
-    for (SObject currentRecord : recordsById.values()) {
-      SObjectType type = currentRecord.getSObjectType();
-      if (type.getDescribe().getName().equalsIgnoreCase(fromObject)) {
-        filteredRecords.add(currentRecord);
-      }
-    }
-
-    return filteredRecords;
-  }
-
-  public Object visit(SelectPart part) {
-    List<SObject> filteredRecords = new List<SObject>();
-    for (SObject currentRecord : this.filteredRecords) {
-      SObjectType type = currentRecord.getSObjectType();
-      SObjectBuilder builder = SObjectBuilder.of(type);
-      for (Field queriedField : part.fields) {
-        builder.put(queriedField.getName(), currentRecord.get(queriedField.getName()));
-      }
-
-      filteredRecords.add(builder.build());
-    }
-
-    this.filteredRecords = filteredRecords;
-    return this.filteredRecords;
-  }
-
-  public Object visit(LimitPart part) {
-    Integer limitAmount = part.limitAmount;
-    for (Integer i = 0; i < filteredRecords.size(); i++) {
-      if (i >= limitAmount) {
-        filteredRecords.remove(i);
-      }
-    }
-
-    return filteredRecords;
-  }
-
-  public Object visit(EmptyPart part) {
-    return filteredRecords;
-  }
-
-  public Object visit(OffsetPart part) {
-    Integer offsetAmount = part.offsetAmount;
-    for (Integer i = 0; i < filteredRecords.size(); i++) {
-      if (i < offsetAmount) {
-        filteredRecords.remove(i);
-      }
-    }
-
-    return filteredRecords;
+  public Map<Id, SObject> getRecordsById() {
+    return recordsById;
   }
 }
