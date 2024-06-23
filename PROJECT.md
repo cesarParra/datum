@@ -3,8 +3,8 @@
 ## Requirements
 
 [/] SELECT (regular fields)
-[ ] SELECT Parents
--> Only one level for now
+[/] SELECT Parents
+[ ] SELECT many level of parents
 [ ] Subselects
 [/] FROM
 [ ] WHERE

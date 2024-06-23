@@ -14,8 +14,8 @@ public class SelectPart extends QueryBuilder.QueryPart {
         this.fields.add(new Field(this.objectType, field));
     }
 
-    public override Object accept(QueryPartVisitor visitor) {
-        return visitor.visit(this);
+    public override Object accept(QueryPartVisitor visitor, Object current) {
+        return visitor.visit(this, current);
     }
 
     public Set<String> toSet() {

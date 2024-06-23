@@ -10,13 +10,13 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
     public List<SObject> query(QueryBuilder queryBuilder) {
         this.filteredRecords = new List<SObject>();
         for (QueryBuilder.QueryPart part : queryBuilder) {
-            part.accept(this);
+            part.accept(this, null); // TODO
         }
 
         return filteredRecords;
     }
 
-    public Object visit(FromPart part) {
+    public Object visit(FromPart part, Object current) {
         String fromObject = part.objectType;
         for (SObject currentRecord : this.db.getRecordsById().values()) {
             SObjectType type = currentRecord.getSObjectType();
@@ -28,7 +28,7 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
         return filteredRecords;
     }
 
-    public Object visit(SelectPart part) {
+    public Object visit(SelectPart part, Object current) {
         List<SObject> filteredRecords = new List<SObject>();
         for (SObject currentRecord : this.filteredRecords) {
             SObjectType type = currentRecord.getSObjectType();
@@ -57,7 +57,11 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
         return this.filteredRecords;
     }
 
-    public Object visit(LimitPart part) {
+    public Object visit(SubselectPart part, Object current) {
+        throw new System.QueryException('Not implemented yet');
+    }
+
+    public Object visit(LimitPart part, Object current) {
         Integer limitAmount = part.limitAmount;
         for (Integer i = 0; i < filteredRecords.size(); i++) {
             if (i >= limitAmount) {
@@ -68,11 +72,11 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
         return filteredRecords;
     }
 
-    public Object visit(EmptyPart part) {
+    public Object visit(EmptyPart part, Object current) {
         return filteredRecords;
     }
 
-    public Object visit(OffsetPart part) {
+    public Object visit(OffsetPart part, Object current) {
         Integer offsetAmount = part.offsetAmount;
         for (Integer i = 0; i < filteredRecords.size(); i++) {
             if (i < offsetAmount) {

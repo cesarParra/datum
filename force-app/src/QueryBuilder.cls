@@ -1,20 +1,21 @@
 public with sharing class QueryBuilder implements Iterable<QueryPart> {
   private final SObjectType targetType;
-  private final List<QueryPart> partsList;
+  private final Map<Parts, QueryPart> partsList;
 
   public abstract class QueryPart {
-    public abstract Object accept(QueryPartVisitor visitor);
+    public abstract Object accept(QueryPartVisitor visitor, Object current);
   }
 
   private QueryBuilder(String objectType) {
     this.targetType = Schema.getGlobalDescribe().get(objectType);
-    this.partsList = new List<QueryPart>{
-      new FromPart(objectType), // 0
-      new SelectPart(targetType, new Set<String>{ 'Id' }), // 1
-      new EmptyPart(Parts.WHERE_PART), // WHERE CLAUSE // 2
-      new EmptyPart(Parts.ORDER_BY_PART), // ORDER BY // 3
-      new LimitPart(null), // LIMIT // 4
-      new EmptyPart(Parts.OFFSET_PART) // OFFSET // 5
+    this.partsList = new Map<Parts, QueryPart>{
+      Parts.FROM_PART => new FromPart(objectType),
+      Parts.SELECT_PART => new SelectPart(targetType, new Set<String>{ 'Id' }),
+      Parts.SUBSELECT_PART => new EmptyPart(Parts.SUBSELECT_PART),
+      Parts.WHERE_PART => new EmptyPart(Parts.WHERE_PART),
+      Parts.ORDER_BY_PART => new EmptyPart(Parts.ORDER_BY_PART),
+      Parts.LIMIT_PART => new LimitPart(null),
+      Parts.OFFSET_PART => new EmptyPart(Parts.OFFSET_PART)
     };
   }
 
@@ -36,24 +37,37 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
     if (fieldName == null) {
       return this;
     }
-    SelectPart selectPart = (SelectPart) this.partsList[1];
+    SelectPart selectPart = (SelectPart) this.partsList.get(Parts.SELECT_PART);
     selectPart.add(fieldName);
+    return this;
+  }
+
+  public QueryBuilder subselect(QueryBuilder subquery) {
+    QueryPart subselectPart = this.partsList.get(Parts.SUBSELECT_PART);
+    SubselectPart part;
+    if (subselectPart instanceof EmptyPart) {
+       part = new SubselectPart();
+    } else {
+      part = (SubselectPart) subselectPart;
+    }
+    part.add(subquery);
+    this.partsList.put(Parts.SUBSELECT_PART, part);
     return this;
   }
 
   public QueryBuilder withLimitAmount(Integer limitAmount) {
     LimitPart part = new LimitPart(limitAmount);
-    this.partsList[4] = part;
+    this.partsList.put(Parts.LIMIT_PART, part);
     return this;
   }
 
   public QueryBuilder withOffsetAmount(Integer offsetAmount) {
     OffsetPart part = new OffsetPart(offsetAmount);
-    this.partsList[5] = part;
+    this.partsList.put(Parts.OFFSET_PART, part);
     return this;
   }
 
   public Iterator<QueryBuilder.QueryPart> iterator() {
-    return this.partsList.iterator();
+    return this.partsList.values().iterator();
   }
 }

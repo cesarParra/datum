@@ -5,7 +5,7 @@ public class EmptyPart extends QueryBuilder.QueryPart {
     this.partType = partType;
   }
 
-  public override Object accept(QueryPartVisitor visitor) {
-    return visitor.visit(this);
+  public override Object accept(QueryPartVisitor visitor, Object current) {
+    return visitor.visit(this, current);
   }
 }
