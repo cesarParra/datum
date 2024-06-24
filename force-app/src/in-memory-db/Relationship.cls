@@ -12,9 +12,6 @@ public class Relationship {
     }
 
     private static String parentToChildRelationshipName(SObjectField field) {
-        if (field.getDescribe().getReferenceTo().isEmpty()) {
-            return '';
-        }
         SObjectType referenceTo = field.getDescribe().getReferenceTo()[0];
         for (ChildRelationship childRel : referenceTo.getDescribe().getChildRelationships()) {
             if (childRel.getField() == field) {

@@ -59,9 +59,7 @@ public class SystemDB extends QDB implements QueryPartVisitor {
   }
 
   public Object visit(OffsetPart part, Object current) {
-    String result = part.offsetAmount != null
-      ? ' OFFSET ' + part.offsetAmount
-      : '';
+    String result = ' OFFSET ' + part.offsetAmount;
     return currentToString(current).replace('{5}', result);
   }
 
