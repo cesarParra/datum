@@ -1,3 +1,14 @@
+/**
+ * @description A class for building SOQL queries in Apex.
+ * @example
+ * QueryBuilder query = QueryBuilder.of('Account')
+ *   .selectFields(new Set<String>{ 'Name', 'Id' })
+ *   .subselect(
+ *     QueryBuilder.of('Contacts')
+ *     .selectFields(new Set<String>{ 'Name', 'Id' })
+ *     .withLimitAmount(10)
+ *   )
+ */
 public with sharing class QueryBuilder implements Iterable<QueryPart> {
   private final SObjectType targetType;
   private final Map<Parts, QueryPart> partsList;
@@ -15,10 +26,21 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
     };
   }
 
+  /**
+   * @description Creates a new QueryBuilder object with the specified object type.
+   * @param objectType The object type to query.
+   *                   When querying a child object, use the relationship name.
+   * @return A new QueryBuilder object.
+   */
   public static QueryBuilder of(String objectType) {
     return new QueryBuilder(objectType);
   }
 
+  /**
+   * @description Adds a set of fields to the SELECT clause of the query.
+   * @param fields A set of field names to add to the SELECT clause.
+   * @return The QueryBuilder object.
+   */
   public QueryBuilder selectFields(Set<String> fields) {
     if (fields == null) {
       return this;
@@ -29,6 +51,11 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
     return this;
   }
 
+  /**
+   * @description Adds a field to the SELECT clause of the query.
+   * @param fieldName The field name to add to the SELECT clause.
+   * @return The QueryBuilder object.
+   */
   public QueryBuilder selectField(String fieldName) {
     if (fieldName == null) {
       return this;
@@ -38,16 +65,24 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
     return this;
   }
 
+  /**
+   * @description Adds a subquery to the query.
+   * @param subquery The subquery to add to the query.
+   * @return The QueryBuilder object.
+   */
   public QueryBuilder subselect(QueryBuilder subquery) {
     QueryPart subselectPart = this.partsList.get(Parts.SUBSELECT_PART);
     SubselectPart part;
     if (subselectPart instanceof EmptyPart) {
-       part = new SubselectPart();
+      part = new SubselectPart();
     } else {
       part = (SubselectPart) subselectPart;
     }
 
-    ChildRelationship relationship = SObjectDescribeUtil.getRelationship(this.targetType, subquery.getFrom());
+    ChildRelationship relationship = SObjectDescribeUtil.getRelationship(
+      this.targetType,
+      subquery.getFrom()
+    );
     FromPart subQueryFrom = (FromPart) subquery.partsList.get(Parts.FROM_PART);
     subQueryFrom.setTargetType(relationship.getChildSObject());
 
@@ -56,22 +91,41 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
     return this;
   }
 
+  /**
+   * @description Sets the maximum number of records to return.
+   * @param limitAmount The maximum number of records to return.
+   * @return The QueryBuilder object.
+   */
   public QueryBuilder withLimitAmount(Integer limitAmount) {
     LimitPart part = new LimitPart(limitAmount);
     this.partsList.put(Parts.LIMIT_PART, part);
     return this;
   }
 
+  /**
+   * @description Sets the offset amount for the query.
+   * @param offsetAmount The offset amount for the query.
+   * @return The QueryBuilder object.
+   */
   public QueryBuilder withOffsetAmount(Integer offsetAmount) {
     OffsetPart part = new OffsetPart(offsetAmount);
     this.partsList.put(Parts.OFFSET_PART, part);
     return this;
   }
 
+  /**
+   * @return The FROM part of the query.
+   * @ignore
+   */
   public String getFrom() {
-    return ((FromPart)this.partsList.get(Parts.FROM_PART)).fromIdentifier;
+    return ((FromPart) this.partsList.get(Parts.FROM_PART)).fromIdentifier;
   }
 
+  /**
+   * @description Returns an iterator over the QueryParts in this QueryBuilder.
+   * @return Iterator<QueryPart>
+   * @ignore
+   */
   public Iterator<QueryPart> iterator() {
     return this.partsList.values().iterator();
   }

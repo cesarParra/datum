@@ -8,23 +8,22 @@
     "source:deploy": "sf project deploy start",
     "dev:start": "npm run org:create && npm run source:deploy",
     "lint": "eslint **/{aura,lwc}/**/*.js",
-    "test": "npm run test:unit",
-    "test:unit": "sfdx-lwc-jest",
-    "test:unit:watch": "sfdx-lwc-jest --watch",
-    "test:unit:debug": "sfdx-lwc-jest --debug",
-    "test:unit:coverage": "sfdx-lwc-jest --coverage",
     "prettier": "prettier --write \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
     "prettier:verify": "prettier --check \"**/*.{cls,cmp,component,css,html,js,json,md,page,trigger,xml,yaml,yml}\"",
     "postinstall": "husky install",
-    "precommit": "lint-staged"
+    "precommit": "lint-staged",
+    "docs:clean": "rimraf ./README.md",
+    "docs:build": "apexdocs-generate",
+    "docs:gen": "npm run docs:clean && npm run docs:build"
   },
   "devDependencies": {
+    "rimraf": "^5.0.7",
+    "@cparra/apexdocs": "^2.25.0-alpha.0",
     "@lwc/eslint-plugin-lwc": "^1.1.2",
     "@prettier/plugin-xml": "^3.2.2",
     "@salesforce/eslint-config-lwc": "^3.2.3",
     "@salesforce/eslint-plugin-aura": "^2.0.0",
     "@salesforce/eslint-plugin-lightning": "^1.0.0",
-    "@salesforce/sfdx-lwc-jest": "^3.1.0",
     "eslint": "^8.11.0",
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-jest": "^27.6.0",
@@ -40,5 +39,17 @@
     "**/{aura,lwc}/**/*.js": [
       "eslint"
     ]
+  },
+  "apexdocs": {
+    "sourceDir": "force-app/api",
+    "targetGenerator": "plain-markdown",
+    "scope": [
+      "global",
+      "public"
+    ],
+    "singleFile": true,
+    "templateFilePath": "template.md",
+    "fileName": "README",
+    "targetDir": "."
   }
 }
