@@ -1,4 +1,5 @@
 public with sharing class SubselectPart extends QueryPart {
+
     public final List<QueryBuilder> subqueries;
 
     public SubselectPart() {

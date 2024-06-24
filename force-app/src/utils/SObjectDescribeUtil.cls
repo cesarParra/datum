@@ -20,7 +20,14 @@ public with sharing class SObjectDescribeUtil {
     return null;
   }
 
-  public static SObjectType getFromName(String fromName) {
-    return Schema.getGlobalDescribe().get(fromName);
+  public static ChildRelationship getRelationship(SObjectType parentType, String relationshipName) {
+    for (ChildRelationship childRel : parentType.getDescribe().getChildRelationships()) {
+      if (childRel.getRelationshipName() != null &&
+          childRel.getRelationshipName().equalsIgnoreCase(relationshipName)) {
+        return childRel;
+      }
+    }
+
+    return null;
   }
 }

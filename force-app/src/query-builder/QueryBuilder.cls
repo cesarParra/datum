@@ -2,10 +2,10 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
   private final SObjectType targetType;
   private final Map<Parts, QueryPart> partsList;
 
-  private QueryBuilder(String objectType) {
-    this.targetType = Schema.getGlobalDescribe().get(objectType);
+  private QueryBuilder(String fromIdentifier) {
+    this.targetType = Schema.getGlobalDescribe().get(fromIdentifier);
     this.partsList = new Map<Parts, QueryPart>{
-      Parts.FROM_PART => new FromPart(objectType),
+      Parts.FROM_PART => new FromPart(fromIdentifier),
       Parts.SELECT_PART => new SelectPart(targetType, new Set<String>{ 'Id' }),
       Parts.SUBSELECT_PART => new EmptyPart(Parts.SUBSELECT_PART),
       Parts.WHERE_PART => new EmptyPart(Parts.WHERE_PART),
@@ -46,6 +46,11 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
     } else {
       part = (SubselectPart) subselectPart;
     }
+
+    ChildRelationship relationship = SObjectDescribeUtil.getRelationship(this.targetType, subquery.getFrom());
+    FromPart subQueryFrom = (FromPart) subquery.partsList.get(Parts.FROM_PART);
+    subQueryFrom.setTargetType(relationship.getChildSObject());
+
     part.add(subquery);
     this.partsList.put(Parts.SUBSELECT_PART, part);
     return this;
@@ -61,6 +66,10 @@ public with sharing class QueryBuilder implements Iterable<QueryPart> {
     OffsetPart part = new OffsetPart(offsetAmount);
     this.partsList.put(Parts.OFFSET_PART, part);
     return this;
+  }
+
+  public String getFrom() {
+    return ((FromPart)this.partsList.get(Parts.FROM_PART)).fromIdentifier;
   }
 
   public Iterator<QueryPart> iterator() {

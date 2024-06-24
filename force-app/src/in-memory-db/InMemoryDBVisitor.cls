@@ -6,17 +6,20 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
     }
 
     public List<SObject> query(QueryBuilder queryBuilder) {
-        List<SObjectBuilder> filteredRecords = new List<SObjectBuilder>();
-        for (QueryPart part : queryBuilder) {
-            filteredRecords = (List<SObjectBuilder>)part.accept(this, filteredRecords);
-        }
-
         List<SObject> builtRecords = new List<SObject>();
-        for (SObjectBuilder record : filteredRecords) {
+        for (SObjectBuilder record : buildSObjectBuilders(queryBuilder)) {
             builtRecords.add(record.build());
         }
 
         return builtRecords;
+    }
+
+    private List<SObjectBuilder> buildSObjectBuilders(QueryBuilder queryBuilder) {
+        List<SObjectBuilder> filteredRecords = new List<SObjectBuilder>();
+        for (QueryPart part : queryBuilder) {
+            filteredRecords = (List<SObjectBuilder>)part.accept(this, filteredRecords);
+        }
+        return filteredRecords;
     }
 
     private static List<SObjectBuilder> toList(Object current) {
@@ -25,7 +28,7 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
 
     public Object visit(FromPart part, Object ignored) {
         List<SObjectBuilder> filtered = new List<SObjectBuilder>();
-        String fromObject = part.objectType;
+        String fromObject = part.getTargetSObjectTypeName();
         for (SObject currentRecord : this.db.getRecordsById().values()) {
             SObjectType type = currentRecord.getSObjectType();
             if (type.getDescribe().getName().equalsIgnoreCase(fromObject)) {
@@ -66,7 +69,21 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
     }
 
     public Object visit(SubselectPart part, Object current) {
-        throw new System.QueryException('Not implemented yet');
+        List<SObjectBuilder> filteredRecords = toList(current).clone();
+        for (QueryBuilder subSelectBuilder : part.subqueries) {
+            List<SObjectBuilder> subRecordBuilders = buildSObjectBuilders(subSelectBuilder);
+            for (SObjectBuilder currentBuilder : filteredRecords) {
+                Id currentParentId = currentBuilder.RecordId;
+                List<SObjectBuilder> buildersThatAreChildren = new List<SObjectBuilder>();
+                for (SObjectBuilder subRecordBuilder : subRecordBuilders) {
+                    if (this.db.isChild(currentParentId, subRecordBuilder.RecordId)) {
+                        buildersThatAreChildren.add(subRecordBuilder);
+                    }
+                }
+                currentBuilder.putChildren(subSelectBuilder.getFrom(), buildersThatAreChildren);
+            }
+        }
+        return filteredRecords;
     }
 
     public Object visit(LimitPart part, Object current) {

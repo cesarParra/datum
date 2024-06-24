@@ -2,33 +2,6 @@ public class InMemoryDB extends QDB {
     final Map<Id, SObject> recordsById = new Map<Id, SObject>();
     final List<Relationship> relationships = new List<Relationship>();
 
-    public class Relationship {
-        public Id parentId;
-        public Id childId;
-        public String childToParentRelationshipName;
-        public String parentToChildRelationshipName;
-
-        public Relationship(Id parentId, Id childId, SObjectField field) {
-            this.parentId = parentId;
-            this.childId = childId;
-            this.childToParentRelationshipName = field.getDescribe().getRelationshipName();
-            this.parentToChildRelationshipName = parentToChildRelationshipName(field);
-        }
-
-        private String parentToChildRelationshipName(SObjectField field) {
-            if (field.getDescribe().getReferenceTo().isEmpty()) {
-                return '';
-            }
-            SObjectType referenceTo = field.getDescribe().getReferenceTo()[0];
-            for (ChildRelationship childRel : referenceTo.getDescribe().getChildRelationships()) {
-                if (childRel.getField() == field) {
-                    return childRel.getRelationshipName();
-                }
-            }
-            return '';
-        }
-    }
-
     public override void doInsert(SObject recordToInsert) {
         recordToInsert.Id = IdGenerator.generate(recordToInsert.getSObjectType());
         handleRelationships(recordToInsert);
@@ -85,16 +58,26 @@ public class InMemoryDB extends QDB {
         return recordsById;
     }
 
-    public class QdbException extends Exception {
-    }
-
     public List<SObject> getChildren(Id parentId, String subRelationshipName) {
         List<SObject> children = new List<SObject>();
         for (Relationship relationship : relationships) {
-            if (relationship.parentId == parentId && relationship.parentToChildRelationshipName.equalsIgnoreCase(subRelationshipName)) {
+            if (relationship.parentId == parentId &&
+                relationship.parentToChildRelationshipName.equalsIgnoreCase(subRelationshipName)) {
                 children.add(recordsById.get(relationship.childId));
             }
         }
         return children;
+    }
+
+    public Boolean isChild(Id parentId, Id childId) {
+        for (Relationship relationship : relationships) {
+            if (relationship.parentId == parentId && relationship.childId == childId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public class QdbException extends Exception {
     }
 }

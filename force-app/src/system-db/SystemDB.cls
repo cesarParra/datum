@@ -48,7 +48,7 @@ public class SystemDB extends QDB implements QueryPartVisitor {
   }
 
   public Object visit(FromPart part, Object current) {
-    return currentToString(current).replace('{0}', part.objectType);
+    return currentToString(current).replace('{0}', part.fromIdentifier);
   }
 
   public Object visit(EmptyPart part, Object current) {

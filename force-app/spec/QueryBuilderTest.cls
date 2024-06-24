@@ -323,36 +323,36 @@ private class QueryBuilderTest {
         Assert.fail('Parent Account not found');
     }
 
-//    @IsTest
-//    static void canSubselect_inMemory() {
-//        Account parentAccount = new Account(Name = 'Parent Account');
-//        QDB.getInstance().doInsert(parentAccount);
-//
-//        Account childAccount = new Account(
-//            Name = 'Child Account',
-//            ParentId = parentAccount.Id
-//        );
-//        QDB.getInstance().doInsert(childAccount);
-//
-//        QueryBuilder builder = QueryBuilder.of('Account')
-//            .selectField('Name')
-//            .selectField('Parent.Name')
-//            .subselect(
-//                QueryBuilder.of('ChildAccounts')
-//                    .selectField('Name')
-//            );
-//
-//        List<Account> accounts = QDB.getInstance().query(builder);
-//
-//        Assert.areEqual(2, accounts.size());
-//        for (Account account : accounts) {
-//            if (account.Name == 'Parent Account') {
-//                Assert.areEqual(1, account.ChildAccounts.size());
-//                Assert.areEqual('Child Account', account.ChildAccounts[0].Name);
-//                return;
-//            }
-//        }
-//
-//        Assert.fail('Parent Account not found');
-//    }
+    @IsTest
+    static void canSubselect_inMemory() {
+        Account parentAccount = new Account(Name = 'Parent Account');
+        QDB.getInstance().doInsert(parentAccount);
+
+        Account childAccount = new Account(
+            Name = 'Child Account',
+            ParentId = parentAccount.Id
+        );
+        QDB.getInstance().doInsert(childAccount);
+
+        QueryBuilder builder = QueryBuilder.of('Account')
+            .selectField('Name')
+            .selectField('Parent.Name')
+            .subselect(
+                QueryBuilder.of('ChildAccounts')
+                    .selectField('Name')
+            );
+
+        List<Account> accounts = QDB.getInstance().query(builder);
+
+        Assert.areEqual(2, accounts.size());
+        for (Account currentAccountRecord : accounts) {
+            if (currentAccountRecord.Name == 'Parent Account') {
+                Assert.areEqual(1, currentAccountRecord.ChildAccounts.size());
+                Assert.areEqual('Child Account', currentAccountRecord.ChildAccounts[0].Name);
+                return;
+            }
+        }
+
+        Assert.fail('Parent Account not found');
+    }
 }
