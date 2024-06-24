@@ -5,16 +5,28 @@ public class InMemoryDB extends QDB {
     public class Relationship {
         public Id parentId;
         public Id childId;
-        public String relationshipName;
+        public String childToParentRelationshipName;
+        public String parentToChildRelationshipName;
 
-        public Relationship(Id parentId, Id childId, String relationshipName) {
+        public Relationship(Id parentId, Id childId, SObjectField field) {
             this.parentId = parentId;
             this.childId = childId;
-            this.relationshipName = relationshipName;
+            this.childToParentRelationshipName = field.getDescribe().getRelationshipName();
+            this.parentToChildRelationshipName = parentToChildRelationshipName(field);
         }
-    }
 
-    public class QdbException extends Exception {
+        private String parentToChildRelationshipName(SObjectField field) {
+            if (field.getDescribe().getReferenceTo().isEmpty()) {
+                return '';
+            }
+            SObjectType referenceTo = field.getDescribe().getReferenceTo()[0];
+            for (ChildRelationship childRel : referenceTo.getDescribe().getChildRelationships()) {
+                if (childRel.getField() == field) {
+                    return childRel.getRelationshipName();
+                }
+            }
+            return '';
+        }
     }
 
     public override void doInsert(SObject recordToInsert) {
@@ -35,7 +47,13 @@ public class InMemoryDB extends QDB {
             if (fieldDescribe.getType() == DisplayType.REFERENCE) {
                 Id parentId = (Id) populatedFields.get(currentlyPopulatedField);
                 if (recordsById.containsKey(parentId)) {
-                    this.relationships.add(new Relationship(parentId, recordToInsert.Id, fieldDescribe.getRelationshipName()));
+                    this.relationships.add(
+                        new Relationship(
+                            parentId,
+                            recordToInsert.Id,
+                            fieldsMap.get(currentlyPopulatedField)
+                        )
+                    );
                 } else {
                     throw new DmlException('The parent does not exist');
                 }
@@ -44,10 +62,8 @@ public class InMemoryDB extends QDB {
     }
 
     public SObject getParent(Id childId, String relationshipName) {
-        System.debug('Received childId: ' + childId + ' and relationshipName: ' + relationshipName);
         for (Relationship relationship : relationships) {
-            System.debug('Looking at relationship: ' + relationship);
-            if (relationship.childId == childId && relationship.relationshipName == relationshipName) {
+            if (relationship.childId == childId && relationship.childToParentRelationshipName == relationshipName) {
                 return recordsById.get(relationship.parentId);
             }
         }
@@ -67,5 +83,18 @@ public class InMemoryDB extends QDB {
 
     public Map<Id, SObject> getRecordsById() {
         return recordsById;
+    }
+
+    public class QdbException extends Exception {
+    }
+
+    public List<SObject> getChildren(Id parentId, String subRelationshipName) {
+        List<SObject> children = new List<SObject>();
+        for (Relationship relationship : relationships) {
+            if (relationship.parentId == parentId && relationship.parentToChildRelationshipName.equalsIgnoreCase(subRelationshipName)) {
+                children.add(recordsById.get(relationship.childId));
+            }
+        }
+        return children;
     }
 }

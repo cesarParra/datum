@@ -1,4 +1,3 @@
-
 public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
     private final InMemoryDB db;
 
@@ -8,7 +7,7 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
 
     public List<SObject> query(QueryBuilder queryBuilder) {
         List<SObject> filteredRecords = new List<SObject>();
-        for (QueryBuilder.QueryPart part : queryBuilder) {
+        for (QueryPart part : queryBuilder) {
             filteredRecords = (List<SObject>)part.accept(this, filteredRecords);
         }
 

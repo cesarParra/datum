@@ -17,14 +17,6 @@ public class SystemDB extends QDB implements QueryPartVisitor {
     Database.insert(recordsToInsert);
   }
 
-  private String buildQuery(QueryBuilder queryBuilder) {
-    String query = 'SELECT {1}{6} FROM {0}{4}{5}';
-    for (QueryBuilder.QueryPart part : queryBuilder) {
-      query = (String) part.accept(this, query);
-    }
-    return query;
-  }
-
   public override List<SObject> query(QueryBuilder queryBuilder) {
     return Database.query(buildQuery(queryBuilder));
   }
@@ -37,11 +29,13 @@ public class SystemDB extends QDB implements QueryPartVisitor {
   }
 
   public Object visit(SubselectPart part, Object current) {
+    // Having a leading comma is safe to do because we are always querying for the Id field,
+    // so we will never end up with a query that only has a sub-query.
     String result = ',';
     for (QueryBuilder subquery : part.subqueries) {
       result += '(' + this.buildQuery(subquery) + '),';
     }
-    // remove trailing comma
+    // Removing the trailing comma
     result = result.substring(0, result.length() - 1);
     return currentToString(current).replace('{6}', result);
   }
@@ -69,6 +63,14 @@ public class SystemDB extends QDB implements QueryPartVisitor {
       ? ' OFFSET ' + part.offsetAmount
       : '';
     return currentToString(current).replace('{5}', result);
+  }
+
+  private String buildQuery(QueryBuilder queryBuilder) {
+    String query = 'SELECT {1}{6} FROM {0}{4}{5}';
+    for (QueryPart part : queryBuilder) {
+      query = (String) part.accept(this, query);
+    }
+    return query;
   }
 
   private static String currentToString(Object current) {

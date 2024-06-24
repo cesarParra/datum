@@ -25,6 +25,15 @@ public with sharing class SObjectBuilder {
     return this;
   }
 
+  public SObjectBuilder putChildren(String relationshipName, List<SObjectBuilder> childBuilders) {
+    List<SObject> children = new List<SObject>();
+    for (SObjectBuilder childBuilder : childBuilders) {
+      children.add(childBuilder.build());
+    }
+    fieldValues.put(relationshipName, new ChildRecords(children));
+    return this;
+  }
+
   public SObject build() {
     this.fieldValues.put(
       'attributes',
@@ -33,5 +42,17 @@ public with sharing class SObjectBuilder {
     String serialized = JSON.serialize(fieldValues);
     Type type = Type.forName(sObjectType.getDescribe().getName());
     return (SObject) JSON.deserialize(serialized, type);
+  }
+
+  private class ChildRecords {
+    public Integer totalSize;
+    public Boolean done;
+    public List<SObject> records;
+
+    public ChildRecords(List<SObject> records) {
+      this.totalSize = records.size();
+      this.done = true;
+      this.records = records;
+    }
   }
 }
