@@ -2,6 +2,8 @@ public with sharing class SObjectBuilder {
   private final Map<String, Object> fieldValues;
   private final SObjectType sObjectType;
 
+  public Id RecordId { get; set; }
+
   private SObjectBuilder(SObjectType sObjectType) {
     this.sObjectType = sObjectType;
     this.fieldValues = new Map<String, Object>();

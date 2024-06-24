@@ -6,25 +6,32 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
     }
 
     public List<SObject> query(QueryBuilder queryBuilder) {
-        List<SObject> filteredRecords = new List<SObject>();
+        List<SObjectBuilder> filteredRecords = new List<SObjectBuilder>();
         for (QueryPart part : queryBuilder) {
-            filteredRecords = (List<SObject>)part.accept(this, filteredRecords);
+            filteredRecords = (List<SObjectBuilder>)part.accept(this, filteredRecords);
         }
 
-        return filteredRecords;
+        List<SObject> builtRecords = new List<SObject>();
+        for (SObjectBuilder record : filteredRecords) {
+            builtRecords.add(record.build());
+        }
+
+        return builtRecords;
     }
 
-    private static List<SObject> toList(Object current) {
-        return (List<SObject>)current;
+    private static List<SObjectBuilder> toList(Object current) {
+        return (List<SObjectBuilder>)current;
     }
 
     public Object visit(FromPart part, Object ignored) {
-        List<SObject> filtered = new List<SObject>();
+        List<SObjectBuilder> filtered = new List<SObjectBuilder>();
         String fromObject = part.objectType;
         for (SObject currentRecord : this.db.getRecordsById().values()) {
             SObjectType type = currentRecord.getSObjectType();
             if (type.getDescribe().getName().equalsIgnoreCase(fromObject)) {
-                filtered.add(currentRecord);
+                SObjectBuilder builder = SObjectBuilder.of(type);
+                builder.RecordId = currentRecord.Id;
+                filtered.add(builder);
             }
         }
 
@@ -32,17 +39,16 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
     }
 
     public Object visit(SelectPart part, Object current) {
-        List<SObject> filteredRecords = new List<SObject>();
-        for (SObject currentRecord : toList(current)) {
-            SObjectType type = currentRecord.getSObjectType();
-            SObjectBuilder builder = SObjectBuilder.of(type);
+        List<SObjectBuilder> filteredRecords = new List<SObjectBuilder>();
+        for (SObjectBuilder currentBuilder : toList(current)) {
+            SObject recordInDatabase = this.db.getRecordsById().get(currentBuilder.RecordId);
             for (Field queriedField : part.baseFields()) {
-                builder.put(queriedField.getName(), currentRecord.get(queriedField.getName()));
+                currentBuilder.put(queriedField.getName(), recordInDatabase.get(queriedField.getName()));
             }
 
             for (String relationshipName : part.getRelationshipFieldsByRelationshipName().keySet()) {
                 List<Field> relationshipFields = part.getRelationshipFieldsByRelationshipName().get(relationshipName);
-                SObject relatedRecord = this.db.getParent(currentRecord.Id, relationshipName);
+                SObject relatedRecord = this.db.getParent(currentBuilder.RecordId, relationshipName);
                 if (relatedRecord == null) {
                     continue;
                 }
@@ -50,10 +56,10 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
                 for (Field relationshipField : relationshipFields) {
                     relatedRecordBuilder.put(relationshipField.getName(), relatedRecord.get(relationshipField.getName()));
                 }
-                builder.putParent(relationshipName, relatedRecordBuilder);
+                currentBuilder.putParent(relationshipName, relatedRecordBuilder);
             }
 
-            filteredRecords.add(builder.build());
+            filteredRecords.add(currentBuilder);
         }
 
         return filteredRecords;
@@ -64,7 +70,7 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
     }
 
     public Object visit(LimitPart part, Object current) {
-        List<SObject> filtered = toList(current).clone();
+        List<SObjectBuilder> filtered = toList(current).clone();
         Integer limitAmount = part.limitAmount;
         for (Integer i = 0; i < filtered.size(); i++) {
             if (i >= limitAmount) {
@@ -80,7 +86,7 @@ public with sharing class InMemoryDBVisitor implements QueryPartVisitor {
     }
 
     public Object visit(OffsetPart part, Object current) {
-        List<SObject> filteredRecords = toList(current).clone();
+        List<SObjectBuilder> filteredRecords = toList(current).clone();
         Integer offsetAmount = part.offsetAmount;
         for (Integer i = 0; i < filteredRecords.size(); i++) {
             if (i < offsetAmount) {
